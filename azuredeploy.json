@@ -177,7 +177,7 @@
             "displayName": "settings"
           },
           "properties": {
-            "WEBSITE_LOAD_CERTIFICATES": "[parameters('signingCertThumbprint']"
+            "WEBSITE_LOAD_CERTIFICATES": "[parameters('signingCertThumbprint')]"
           }
         }
       ]
