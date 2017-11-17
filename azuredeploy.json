@@ -126,6 +126,38 @@
               "type": "SQLAzure"
             }
           }
+        },
+        {
+          "apiVersion": "2016-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+          ],
+          "name": "web",
+          "properties": {
+            "remoteDebuggingEnabled": true,
+            "remoteDebuggingVersion": "VS2017",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false,
+                "virtualDirectories": []
+              },
+              {
+                "virtualPath": "/boot",
+                "physicalPath": "site\\boot",
+                "preloadEnabled": false,
+                "virtualDirectories": []
+              },
+              {
+                "virtualPath": "/odata",
+                "physicalPath": "site\\odata",
+                "preloadEnabled": false,
+                "virtualDirectories": []
+              }
+            ]
+          },
+          "type": "config"
         }
       ]
     }
