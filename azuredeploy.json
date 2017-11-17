@@ -12,6 +12,10 @@
         "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
       }
     },
+    "webSiteName": {
+      "type": "string",
+      "defaultValue": "[concat('cap-dev-', uniqueString(resourceGroup().id))]"
+    },
     "skuCapacity": {
       "type": "int",
       "defaultValue": 1,
@@ -23,7 +27,6 @@
   },
   "variables": {
     "hostingPlanName": "[concat('hostingplan', uniqueString(resourceGroup().id))]",
-    "webSiteName": "[concat('webSite', uniqueString(resourceGroup().id))]",
     "databaseName": "[concat('capcoredb', uniqueString(resourceGroup().id))]",
     "sqlserverName": "[concat('sqlserver', uniqueString(resourceGroup().id))]",
     "sqlserverAdminLogin": "[concat('l', uniqueString(resourceGroup().id, '9A08DDB9-95A1-495F-9263-D89738ED4205'))]",
@@ -56,10 +59,10 @@
             "[variables('sqlserverName')]"
           ],
           "properties": {
-            "edition": "Free",
+            "edition": "Basic",
             "collation": "SQL_Latin1_General_CP1_CI_AS",
-            "maxSizeBytes": "33554432",
-            "requestedServiceObjectiveName": "Free"
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "Basic"
           }
         },
         {
@@ -95,7 +98,7 @@
     },
     {
       "apiVersion": "2016-03-01",
-      "name": "[variables('webSiteName')]",
+      "name": "[parameters('webSiteName')]",
       "type": "Microsoft.Web/sites",
       "location": "[resourceGroup().location]",
       "dependsOn": [
@@ -106,7 +109,7 @@
         "displayName": "Website"
       },
       "properties": {
-        "name": "[variables('webSiteName')]",
+        "name": "[parameters('webSiteName')]",
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
       },
       "resources": [
@@ -115,7 +118,7 @@
           "type": "config",
           "name": "connectionstrings",
           "dependsOn": [
-            "[variables('webSiteName')]"
+            "[parameters('webSiteName')]"
           ],
           "properties": {
             "AutoServiceContext": {
@@ -130,7 +133,7 @@
   "outputs": {
     "siteUri": {
       "type": "string",
-      "value": "[reference(concat('Microsoft.Web/sites/', variables('webSiteName'))).hostnames[0]]"
+      "value": "[reference(concat('Microsoft.Web/sites/', parameters('webSiteName'))).hostnames[0]]"
     },
     "sqlSvrFqdn": {
       "type": "string",
