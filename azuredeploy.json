@@ -16,6 +16,14 @@
       "type": "string",
       "defaultValue": "[concat('cap-dev-', uniqueString(resourceGroup().id))]"
     },
+    "hostingPlanName": {
+      "type": "string",
+      "defaultValue": "[concat('hostingplan', uniqueString(resourceGroup().id))]"
+    },
+    "signingCertThumbprint": {
+      "type": "string",
+      "defaultValue": "197BD6200104C0E9D737DA00823757A3D68D84B1"
+    },
     "skuCapacity": {
       "type": "int",
       "defaultValue": 1,
@@ -26,7 +34,6 @@
     }
   },
   "variables": {
-    "hostingPlanName": "[concat('hostingplan', uniqueString(resourceGroup().id))]",
     "databaseName": "[concat('capcoredb', uniqueString(resourceGroup().id))]",
     "sqlserverName": "[concat('sqlserver', uniqueString(resourceGroup().id))]",
     "sqlserverAdminLogin": "[concat('l', uniqueString(resourceGroup().id, '9A08DDB9-95A1-495F-9263-D89738ED4205'))]",
@@ -82,7 +89,7 @@
     },
     {
       "apiVersion": "2016-03-01",
-      "name": "[variables('hostingPlanName')]",
+      "name": "[parameters('hostingPlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
       "tags": {
@@ -93,7 +100,7 @@
         "capacity": "[parameters('skuCapacity')]"
       },
       "properties": {
-        "name": "[variables('hostingPlanName')]"
+        "name": "[parameters('hostingPlanName')]"
       }
     },
     {
@@ -102,15 +109,15 @@
       "type": "Microsoft.Web/sites",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[variables('hostingPlanName')]"
+        "[parameters('hostingPlanName')]"
       ],
       "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName')))]": "empty",
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName')))]": "empty",
         "displayName": "Website"
       },
       "properties": {
         "name": "[parameters('webSiteName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
       },
       "resources": [
         {
@@ -158,6 +165,20 @@
             ]
           },
           "type": "config"
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+          ],
+          "tags": {
+            "displayName": "settings"
+          },
+          "properties": {
+            "WEBSITE_LOAD_CERTIFICATES": "[parameters('signingCertThumbprint'])"
+          }
         }
       ]
     }
