@@ -90,7 +90,7 @@
           ],
           "properties": {
             "AutoServiceContext": {
-              "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('databaseName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', reference(concat('Microsoft.Sql/servers/', parameters('sqlserverName'))).fullyQualifiedDomainName, ';Password=', parameters('sqlserverAdminPassword'), ';')]",
+                 "value": "[concat('Data Source=tcp:', parameters('sqlserverName'), '.database.windows.net,1433;Initial Catalog=', parameters('databaseName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', parameters('sqlserverName'), '.database.windows.net;Password=', parameters('sqlserverAdminPassword'), ';')]",
               "type": "SQLAzure"
             }
           }
