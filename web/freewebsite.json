@@ -1,0 +1,149 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "skuName": {
+      "type": "string",
+      "defaultValue": "F1",
+      "allowedValues": [
+        "F1"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
+    "webSiteName": {
+      "type": "string",
+      "defaultValue": "[concat('cap-dev-', uniqueString(resourceGroup().id))]"
+    },
+    "hostingPlanName": {
+      "type": "string",
+      "defaultValue": "[concat('hostingplan', uniqueString(resourceGroup().id))]"
+    },
+    "signingCertThumbprint": {
+      "type": "string",
+      "defaultValue": "197BD6200104C0E9D737DA00823757A3D68D84B1"
+    },
+    "skuCapacity": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "metadata": {
+        "description": "Describes plan's instance count"
+      }
+    },
+    "sqlserverName": {
+      "type": "string"
+    },
+    "sqlserverAdminLogin": {
+      "type": "string"
+    },
+    "sqlserverAdminPassword": {
+      "type": "string"
+    },
+    "databaseName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-03-01",
+      "name": "[parameters('hostingPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "HostingPlan"
+      },
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "capacity": "[parameters('skuCapacity')]"
+      },
+      "properties": {
+        "name": "[parameters('hostingPlanName')]"
+      }
+    },
+    {
+      "apiVersion": "2016-03-01",
+      "name": "[parameters('webSiteName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[parameters('hostingPlanName')]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName')))]": "empty",
+        "displayName": "Website"
+      },
+      "properties": {
+        "name": "[parameters('webSiteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+      },
+      "resources": [
+        {
+          "apiVersion": "2016-03-01",
+          "type": "config",
+          "name": "connectionstrings",
+          "dependsOn": [
+            "[parameters('webSiteName')]"
+          ],
+          "properties": {
+            "AutoServiceContext": {
+              "value": "[concat('Data Source=tcp:', reference(concat('Microsoft.Sql/servers/', parameters('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('databaseName'), ';User Id=', parameters('sqlserverAdminLogin'), '@', reference(concat('Microsoft.Sql/servers/', parameters('sqlserverName'))).fullyQualifiedDomainName, ';Password=', parameters('sqlserverAdminPassword'), ';')]",
+              "type": "SQLAzure"
+            }
+          }
+        },
+        {
+          "apiVersion": "2016-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+          ],
+          "name": "web",
+          "properties": {
+            "remoteDebuggingEnabled": true,
+            "remoteDebuggingVersion": "VS2017",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false,
+                "virtualDirectories": []
+              },
+              {
+                "virtualPath": "/boot",
+                "physicalPath": "site\\boot",
+                "preloadEnabled": false,
+                "virtualDirectories": []
+              },
+              {
+                "virtualPath": "/odata",
+                "physicalPath": "site\\odata",
+                "preloadEnabled": false,
+                "virtualDirectories": []
+              }
+            ]
+          },
+          "type": "config"
+        },
+        {
+          "name": "appsettings",
+          "type": "config",
+          "apiVersion": "2015-08-01",
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+          ],
+          "tags": {
+            "displayName": "settings"
+          },
+          "properties": {
+            "WEBSITE_LOAD_CERTIFICATES": "[parameters('signingCertThumbprint')]"
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {
+  }
+}
