@@ -1,5 +1,5 @@
 {
-  "itemDisplayName": "Provision a Free Web App with a Free SQL Database",
+  "itemDisplayName": "Test a Free Web App with a Free SQL Database",
   "description": "This template provisions a Web App, a SQL Database, AutoScale settings, Alert rules. It configures a connection string in the web app for the database.",
   "summary": "Provision a Free Web App with a Free SQL Database",
   "githubUsername": "durbs182",
